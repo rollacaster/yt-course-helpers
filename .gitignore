@@ -1,0 +1,8 @@
+/.cljs_node_repl/
+/.cpcache/
+/.creds
+/.dir-locals.el
+/.nrepl-port
+/node_modules/
+/resources/videos.org
+/.creds.edn
