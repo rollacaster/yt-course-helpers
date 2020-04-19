@@ -4,7 +4,7 @@
             [cljs.core.async :refer [go go-loop <!]]
             [cljs.core.async.interop :refer [<p!]]
             [yt-course-helpers.fs :as fs]
-            [yt-course-helpers.auth :refer [token]]))
+            [yt-course-helpers.auth :refer [authorize]]))
 
 
 (defn query-params [params]
@@ -14,7 +14,7 @@
   ([endpoint]
    (-> (fetch (str "https://www.googleapis.com/youtube/v3/" endpoint)
               (clj->js {:headers {:Content-Type "Application/json"
-                                  :Authorization (str "Bearer " @token)}}))
+                                  :Authorization (str "Bearer " (authorize))}}))
        (.then #(.json %))
        (.then #(js->clj % :keywordize-keys true))))
   ([endpoint params]

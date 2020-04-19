@@ -12,6 +12,7 @@
   "dependencies": {
     "google-auth-library": "^6.0.0",
     "googleapis": "^48.0.0",
+    "mkdirp": "^1.0.4",
     "node-fetch": "^2.6.0",
     "opn": "^6.0.0"
   }

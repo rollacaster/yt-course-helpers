@@ -4,5 +4,6 @@
  :npm-deps {"node-fetch" "2.6.0"
             "googleapis" "48.0.0"
             "google-auth-library" "6.0.0"
-            "opn" "6.0.0"}
+            "opn" "6.0.0"
+            "mkdirp" "1.0.4"}
  :install-deps true}
