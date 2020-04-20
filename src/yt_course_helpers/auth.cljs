@@ -7,14 +7,12 @@
             ["url" :as url]
             ["mkdirp" :as mkdirp]))
 
-(def o-auth2 (.-OAuth2 (.-auth (.-google googleapis))))
-(def scopes  #js ["https://www.googleapis.com/auth/youtube"])
+(defonce server (atom nil))
 (def creds-file (reader/read-string (fs/read-file ".creds.edn")))
-(def client-secret (:client-secret creds-file))
-(def client-id (:client-id creds-file))
-(def redirect-uri "http://localhost:8080")
-(def oauth2-client (new o-auth2 client-id client-secret redirect-uri))
-(def auth-url (.generateAuthUrl oauth2-client #js {:scope scopes}))
+(def oauth2-client (new (.-OAuth2 (.-auth (.-google googleapis)))
+                        (:client-id creds-file)
+                        (:client-secret creds-file)
+                        "http://localhost:8080"))
 (def token-dir (str (or (.-HOME (.-env js/process)) (.-HOMEPATH (.-env js/process)) (.-USERPROFILE (.-env js/process)))
                     "/.credentials/"))
 (def token-path (str token-dir "yt-course-helpser.json"))
@@ -29,8 +27,6 @@
                    (set! (.-credentials oauth2-client) my-token)
                    (mkdirp token-dir)
                    (fs/write-file token-path (.stringify js/JSON my-token)))))))
-
-(defonce server (atom nil))
 
 (defn handler [req res]
   (let [host (.-host (.-headers req))
@@ -47,7 +43,6 @@
         (.writeHead res 404)
         (.end res)))))
 
-
 (defn authorize []
   (try
     (if (keys (js->clj (.-credentials oauth2-client)))
@@ -58,4 +53,4 @@
     (catch js/Object _
       (reset! server (.createServer http handler))
       (.listen @server 8080)
-      (opn auth-url))))
+      (opn (.generateAuthUrl oauth2-client #js {:scope ["https://www.googleapis.com/auth/youtube"]})))))
