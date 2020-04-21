@@ -1,0 +1,75 @@
+S = line*
+
+<line> = (empty-line / head-line / affiliated-keyword-line / keyword-line / todo-line / greater-block-begin-line / greater-block-end-line / dynamic-block-begin-line / dynamic-block-end-line / drawer-begin-line / drawer-end-line / list-item-line / footnote-line / content-line) eol
+
+empty-line = "" | #"\s+"
+content-line = #".*"
+
+<eol> = <#'\n|$'>
+<s> = <#"[\t ]+">
+<word> = #"[^\r\n\s$]+"
+
+head-line = stars [s priority] [s comment-token] s title [s tags]
+stars = #'\*+'
+priority = <"[#"> #"[A-Z]" <"]">
+comment-token = <"COMMENT">
+title = !tags word {s !tags word}
+tags = <':'> ( tag <':'> )+
+<tag> = #'[a-zA-Z0-9_@#%]+'
+
+affiliated-keyword-line = <"#+"> (key | attr) <": "> value
+optional = <"["> optional-value <"]">
+value = #"[^\]\n]+"
+<optional-value> = #"[^\]\n]+"
+key = "HEADER" | "NAME" | "PLOT" | (("RESULTS" | "CAPTION") [ optional ]) | "AUTHOR" | "DATE" | "TITLE"
+attr = <"ATTR_"> backend
+backend = #"[a-zA-Z0-9-_]+"
+
+todo-line = <"#+TODO: "> states
+<states> = todo-state {s todo-state} <s "|" s> done-state {s done-state}
+todo-state = #"[A-Z]+"
+done-state = #"[A-Z]+"
+
+greater-block-begin-line = <"#+BEGIN_"> greater-block-name [s greater-block-parameters]
+greater-block-name = anything-but-whitespace
+greater-block-parameters = anything-but-newline
+
+<anything-but-whitespace> = #"[^\r\n\s$]+"
+<anything-but-newline> = #"[^\n$]+"
+
+greater-block-end-line = <"#+END_"> greater-block-name
+
+drawer-begin-line = <":"> drawer-name <":">
+drawer-name = #"[a-zA-Z0-9-_]+"
+drawer-end-line = <":END:">
+
+dynamic-block-begin-line = <'#+BEGIN: '> dynamic-block-name [s dynamic-block-parameters]
+dynamic-block-end-line = <'#+END:'>
+
+dynamic-block-name = anything-but-whitespace
+dynamic-block-parameters = anything-but-newline
+
+footnote-line = <'['> footnote-label <'] '> footnote-contents
+footnote-label = (number | <'fn:'> footnote-word)
+<number> = #"\d+"
+<footnote-word> = #"[a-zA-Z0-9-_]+"
+footnote-contents = anything-but-newline
+
+list-item-line = ( list-item-bullet | list-item-counter list-item-counter-suffix ) <" "> (list-item-checkbox <" "> list-item-contents / list-item-contents)
+list-item-bullet = #"[*\-+]"
+list-item-contents = anything-but-newline
+list-item-counter = #"(\d+|[a-zA-Z])"
+list-item-counter-suffix = #"[.)]"
+list-item-checkbox = <"["> list-item-checkbox-state <"]">
+(* CHECK-BOX is either a single whitespace character, a “X” character
+or a hyphen, enclosed within square brackets. *)
+list-item-checkbox-state = #"[ \-X]"
+
+keyword-line = <'#+'> keyword-key <':'> [<' '> keyword-value]
+keyword-key = #"[^\s:]+"
+keyword-value = anything-but-newline
+
+node-property-line = <':'> node-property-name [node-property-plus] <':'> [<' '> node-property-value]
+node-property-name = #"[^\s:+]+"
+node-property-plus = <"+">
+node-property-value = anything-but-newline

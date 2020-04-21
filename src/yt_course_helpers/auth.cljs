@@ -53,4 +53,5 @@
     (catch js/Object _
       (reset! server (.createServer http handler))
       (.listen @server 8080)
-      (opn (.generateAuthUrl oauth2-client #js {:scope ["https://www.googleapis.com/auth/youtube"]})))))
+      (opn (.generateAuthUrl oauth2-client (clj->js {:scope ["https://www.googleapis.com/auth/youtube"]
+                                                     :access_type "offline"}))))))
