@@ -42,10 +42,11 @@
           videos (<! (list-yt "videos" {:part "snippet" :id (s/join "," video-ids)}))]
       (:items videos))))
 
-(def videos-path "resources/videos.org")
+(def videos-path "target/videos.org")
 
 (defn write-videos-file [videos]
   (go
+    (<p! (fs/create-dir "target"))
     (fs/write-file videos-path
                    (s/join
                     "\n"
@@ -69,9 +70,10 @@
 
 (defn update-video-descriptions [yt-videos videos]
   (go
-    (doseq [yt-video yt-videos]
-      (let [updated-videos (some (fn [video] (when (= (:title video) (:title (:snippet yt-video))) video)) videos)]
-        (<! (update-yt "videos" (assoc-in yt-video [:snippet :description] (:description updated-videos))))))))
+    (doseq [{{old-description :description :keys [title]} :snippet :as yt-video} yt-videos]
+      (let [{:keys [description] :as updated-video} (some (fn [video] (when (= (:title video) title) video)) videos)]
+        (when (not (= old-description description))
+          (<! (update-yt "videos" (assoc-in yt-video [:snippet :description] updated-video))))))))
 
 (comment
   ;; Load files from yt and write them to disk
